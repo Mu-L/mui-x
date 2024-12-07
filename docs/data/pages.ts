@@ -62,7 +62,7 @@ const pages: MuiPage[] = [
               { pathname: '/x/react-data-grid/row-definition' },
               { pathname: '/x/react-data-grid/row-updates' },
               { pathname: '/x/react-data-grid/row-height' },
-              { pathname: '/x/react-data-grid/row-spanning', unstable: true },
+              { pathname: '/x/react-data-grid/row-spanning', newFeature: true },
               { pathname: '/x/react-data-grid/master-detail', plan: 'pro' },
               { pathname: '/x/react-data-grid/row-ordering', plan: 'pro' },
               { pathname: '/x/react-data-grid/row-pinning', plan: 'pro' },
@@ -129,7 +129,6 @@ const pages: MuiPage[] = [
           { pathname: '/x/react-data-grid/export' },
           { pathname: '/x/react-data-grid/clipboard', title: 'Copy and paste' },
           { pathname: '/x/react-data-grid/scrolling' },
-
           {
             pathname: '/x/react-data-grid/list-view',
             title: 'List view',
@@ -155,12 +154,7 @@ const pages: MuiPage[] = [
               {
                 pathname: '/x/react-data-grid/server-side-data/lazy-loading',
                 plan: 'pro',
-                planned: true,
-              },
-              {
-                pathname: '/x/react-data-grid/server-side-data/infinite-loading',
-                plan: 'pro',
-                planned: true,
+                unstable: true,
               },
               {
                 pathname: '/x/react-data-grid/server-side-data/row-grouping',
@@ -219,6 +213,7 @@ const pages: MuiPage[] = [
               },
 
               { pathname: '/x/api/data-grid/grid-actions-col-def', title: 'GridActionsColDef' },
+              { pathname: '/x/api/data-grid/grid-list-col-def', title: 'GridListColDef' },
               {
                 pathname: '/x/api/data-grid/grid-export-state-params',
                 title: 'GridExportStateParams',

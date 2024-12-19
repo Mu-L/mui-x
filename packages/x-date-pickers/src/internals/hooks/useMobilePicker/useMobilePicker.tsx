@@ -7,8 +7,8 @@ import { UseMobilePickerParams, UseMobilePickerProps } from './useMobilePicker.t
 import { usePicker } from '../usePicker';
 import { onSpaceOrEnter } from '../../utils/utils';
 import { PickersLayout } from '../../../PickersLayout';
-import { FieldSection, PickerValidDate, FieldRef, InferError } from '../../../models';
-import { BaseSingleInputFieldProps, DateOrTimeViewWithMeridiem } from '../../models';
+import { FieldRef, InferError } from '../../../models';
+import { BaseSingleInputFieldProps, DateOrTimeViewWithMeridiem, PickerValue } from '../../models';
 import { PickerProvider } from '../../components/PickerProvider';
 
 /**
@@ -50,20 +50,18 @@ export const useMobilePicker = <
     localeText,
   } = props;
 
-  const fieldRef = React.useRef<FieldRef<FieldSection>>(null);
+  const fieldRef = React.useRef<FieldRef<PickerValue>>(null);
 
   const labelId = useId();
   const isToolbarHidden = innerSlotProps?.toolbar?.hidden ?? false;
 
   const {
-    open,
-    actions,
     layoutProps,
     providerProps,
     renderCurrentView,
     fieldProps: pickerFieldProps,
     ownerState,
-  } = usePicker<PickerValidDate | null, TView, FieldSection, TExternalProps, {}>({
+  } = usePicker<PickerValue, TView, TExternalProps, {}>({
     ...pickerParams,
     props,
     fieldRef,
@@ -75,8 +73,7 @@ export const useMobilePicker = <
 
   const Field = slots.field;
   const fieldProps: BaseSingleInputFieldProps<
-    PickerValidDate | null,
-    FieldSection,
+    PickerValue,
     TEnableAccessibleFieldDOMStructure,
     InferError<TExternalProps>
   > = useSlotProps({
@@ -101,8 +98,12 @@ export const useMobilePicker = <
       name,
       ...(isToolbarHidden && { id: labelId }),
       ...(!(disabled || readOnly) && {
-        onClick: actions.onOpen,
-        onKeyDown: onSpaceOrEnter(actions.onOpen),
+        // These direct access to `providerProps` will go away in https://github.com/mui/mui-x/pull/15671
+        onClick: (event: React.UIEvent) => {
+          event.preventDefault();
+          providerProps.contextValue.setOpen(true);
+        },
+        onKeyDown: onSpaceOrEnter(() => providerProps.contextValue.setOpen(true)),
       }),
       ...(!!inputRef && { inputRef }),
     },
@@ -152,7 +153,7 @@ export const useMobilePicker = <
         slotProps={slotProps}
         unstableFieldRef={handleFieldRef}
       />
-      <PickersModalDialog {...actions} open={open} slots={slots} slotProps={slotProps}>
+      <PickersModalDialog slots={slots} slotProps={slotProps}>
         <Layout {...layoutProps} {...slotProps?.layout} slots={slots} slotProps={slotProps}>
           {renderCurrentView()}
         </Layout>

@@ -8,8 +8,8 @@ import { PickersPopper } from '../../components/PickersPopper';
 import { UseDesktopPickerParams, UseDesktopPickerProps } from './useDesktopPicker.types';
 import { usePicker } from '../usePicker';
 import { PickersLayout } from '../../../PickersLayout';
-import { FieldSection, PickerValidDate, FieldRef, InferError } from '../../../models';
-import { BaseSingleInputFieldProps, DateOrTimeViewWithMeridiem } from '../../models';
+import { FieldRef, InferError } from '../../../models';
+import { DateOrTimeViewWithMeridiem, BaseSingleInputFieldProps, PickerValue } from '../../models';
 import { PickerProvider } from '../../components/PickerProvider';
 
 /**
@@ -54,14 +54,12 @@ export const useDesktopPicker = <
   } = props;
 
   const containerRef = React.useRef<HTMLDivElement>(null);
-  const fieldRef = React.useRef<FieldRef<FieldSection>>(null);
+  const fieldRef = React.useRef<FieldRef<PickerValue>>(null);
 
   const labelId = useId();
   const isToolbarHidden = innerSlotProps?.toolbar?.hidden ?? false;
 
   const {
-    open,
-    actions,
     hasUIView,
     layoutProps,
     providerProps,
@@ -69,7 +67,7 @@ export const useDesktopPicker = <
     shouldRestoreFocus,
     fieldProps: pickerFieldProps,
     ownerState,
-  } = usePicker<PickerValidDate | null, TView, FieldSection, TExternalProps, {}>({
+  } = usePicker<PickerValue, TView, TExternalProps, {}>({
     ...pickerParams,
     props,
     fieldRef,
@@ -95,7 +93,11 @@ export const useDesktopPicker = <
     externalSlotProps: innerSlotProps?.openPickerButton,
     additionalProps: {
       disabled: disabled || readOnly,
-      onClick: open ? actions.onClose : actions.onOpen,
+      // This direct access to `providerProps` will go away in https://github.com/mui/mui-x/pull/15671
+      onClick: (event: React.UIEvent) => {
+        event.preventDefault();
+        providerProps.contextValue.setOpen((prevOpen) => !prevOpen);
+      },
       'aria-label': getOpenDialogAriaText(pickerFieldProps.value),
       edge: inputAdornmentProps.position,
     },
@@ -111,8 +113,7 @@ export const useDesktopPicker = <
 
   const Field = slots.field;
   const fieldProps: BaseSingleInputFieldProps<
-    PickerValidDate | null,
-    FieldSection,
+    PickerValue,
     TEnableAccessibleFieldDOMStructure,
     InferError<TExternalProps>
   > = useSlotProps({
@@ -136,7 +137,7 @@ export const useDesktopPicker = <
       sx,
       label,
       name,
-      focused: open ? true : undefined,
+      focused: providerProps.contextValue.open ? true : undefined,
       ...(isToolbarHidden && { id: labelId }),
       ...(!!inputRef && { inputRef }),
     },
@@ -203,8 +204,6 @@ export const useDesktopPicker = <
         role="dialog"
         placement="bottom-start"
         anchorEl={containerRef.current}
-        {...actions}
-        open={open}
         slots={slots}
         slotProps={slotProps}
         shouldRestoreFocus={shouldRestoreFocus}

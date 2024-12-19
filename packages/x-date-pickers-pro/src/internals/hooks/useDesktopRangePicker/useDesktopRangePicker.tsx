@@ -11,6 +11,7 @@ import {
   DateOrTimeViewWithMeridiem,
   ExportedBaseTabsProps,
   PickerProvider,
+  PickerValue,
   PickerRangeValue,
 } from '@mui/x-date-pickers/internals';
 import { FieldRef, InferError } from '@mui/x-date-pickers/models';
@@ -24,7 +25,6 @@ import {
   useEnrichedRangePickerFieldProps,
 } from '../useEnrichedRangePickerFieldProps';
 import { getReleaseInfo } from '../../utils/releaseInfo';
-import { RangeFieldSection } from '../../../models';
 import { useRangePosition } from '../useRangePosition';
 
 const releaseInfo = getReleaseInfo();
@@ -69,37 +69,39 @@ export const useDesktopRangePicker = <
   const fieldContainerRef = React.useRef<HTMLDivElement>(null);
   const anchorRef = React.useRef<HTMLDivElement>(null);
   const popperRef = React.useRef<HTMLDivElement>(null);
-  const startFieldRef = React.useRef<FieldRef<RangeFieldSection>>(null);
-  const endFieldRef = React.useRef<FieldRef<RangeFieldSection>>(null);
+  const startFieldRef = React.useRef<FieldRef<PickerValue>>(null);
+  const endFieldRef = React.useRef<FieldRef<PickerValue>>(null);
+  const singleInputFieldRef = React.useRef<FieldRef<PickerRangeValue>>(null);
   const initialView = React.useRef<TView | null>(props.openTo ?? null);
 
   const fieldType = (slots.field as any).fieldType ?? 'multi-input';
   const { rangePosition, onRangePositionChange } = useRangePosition(
     props,
-    fieldType === 'single-input' ? startFieldRef : undefined,
+    fieldType === 'single-input' ? singleInputFieldRef : undefined,
   );
 
+  let fieldRef: React.RefObject<FieldRef<PickerValue> | FieldRef<PickerRangeValue>>;
+  if (fieldType === 'single-input') {
+    fieldRef = singleInputFieldRef;
+  } else if (rangePosition === 'start') {
+    fieldRef = startFieldRef;
+  } else {
+    fieldRef = endFieldRef;
+  }
+
   const {
-    open,
-    actions,
     layoutProps,
     providerProps,
     renderCurrentView,
     shouldRestoreFocus,
     fieldProps: pickerFieldProps,
     ownerState,
-  } = usePicker<
-    PickerRangeValue,
-    TView,
-    RangeFieldSection,
-    TExternalProps,
-    DesktopRangePickerAdditionalViewProps
-  >({
+  } = usePicker<PickerRangeValue, TView, TExternalProps, DesktopRangePickerAdditionalViewProps>({
     ...pickerParams,
     props,
     variant: 'desktop',
     autoFocusView: false,
-    fieldRef: rangePosition === 'start' ? startFieldRef : endFieldRef,
+    fieldRef,
     localeText,
     additionalViewProps: {
       rangePosition,
@@ -108,8 +110,8 @@ export const useDesktopRangePicker = <
   });
 
   React.useEffect(() => {
-    if (layoutProps.view) {
-      initialView.current = layoutProps.view;
+    if (providerProps.contextValue.view) {
+      initialView.current = providerProps.contextValue.view;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -123,7 +125,8 @@ export const useDesktopRangePicker = <
         return;
       }
 
-      actions.onDismiss();
+      // This direct access to `providerProps` will go away once the range fields stop having their views in a tooltip.
+      providerProps.privateContextValue.dismissViews();
     });
   };
 
@@ -166,8 +169,9 @@ export const useDesktopRangePicker = <
   >({
     variant: 'desktop',
     fieldType,
-    open,
-    actions,
+    // These direct access to `providerProps` will go away once the range fields handle the picker opening
+    open: providerProps.contextValue.open,
+    setOpen: providerProps.contextValue.setOpen,
     readOnly,
     disableOpenPicker,
     label,
@@ -181,12 +185,16 @@ export const useDesktopRangePicker = <
     anchorRef,
     startFieldRef,
     endFieldRef,
-    currentView: layoutProps.view !== props.openTo ? layoutProps.view : undefined,
+    singleInputFieldRef,
+    currentView:
+      providerProps.contextValue.view !== props.openTo
+        ? providerProps.contextValue.view
+        : undefined,
     initialView: initialView.current ?? undefined,
-    onViewChange: layoutProps.onViewChange,
+    onViewChange: providerProps.contextValue.onViewChange,
   });
 
-  const slotPropsForLayout: PickersLayoutSlotProps<PickerRangeValue, TView> = {
+  const slotPropsForLayout: PickersLayoutSlotProps<PickerRangeValue> = {
     ...slotProps,
     tabs: {
       ...slotProps?.tabs,
@@ -210,8 +218,6 @@ export const useDesktopRangePicker = <
         containerRef={popperRef}
         anchorEl={anchorRef.current}
         onBlur={handleBlur}
-        {...actions}
-        open={open}
         slots={slots}
         slotProps={slotProps}
         shouldRestoreFocus={shouldRestoreFocus}

@@ -1,8 +1,8 @@
+import * as React from 'react';
 import { FieldChangeHandlerContext, UseFieldInternalProps } from '../useField';
 import { Validator } from '../../../validation';
 import { PickerVariant } from '../../models/common';
 import {
-  FieldSection,
   TimezoneProps,
   MuiPickersAdapter,
   PickersTimezone,
@@ -17,11 +17,12 @@ import {
   PickerShortcutChangeImportance,
   PickersShortcutsItemContext,
 } from '../../../PickersShortcuts';
+import { InferNonNullablePickerValue, PickerValidValue } from '../../models';
 
-export interface PickerValueManager<TValue, TError> {
+export interface PickerValueManager<TValue extends PickerValidValue, TError> {
   /**
    * Determines if two values are equal.
-   * @template TValue
+   * @template TValue The value type. It will be the same type as `value` or `null`. It can be in `[start, end]` format in case of range value.
    * @param {MuiPickersAdapter} utils The adapter.
    * @param {TValue} valueLeft The first value to compare.
    * @param {TValue} valueRight The second value to compare.
@@ -34,7 +35,7 @@ export interface PickerValueManager<TValue, TError> {
   emptyValue: TValue;
   /**
    * Method returning the value to set when clicking the "Today" button
-   * @template TValue
+   * @template TValue The value type. It will be the same type as `value` or `null`. It can be in `[start, end]` format in case of range value.
    * @param {MuiPickersAdapter} utils The adapter.
    * @param {PickersTimezone} timezone The current timezone.
    * @param {PickerValueType} valueType The type of the value being edited.
@@ -46,7 +47,7 @@ export interface PickerValueManager<TValue, TError> {
     valueType: PickerValueType,
   ) => TValue;
   /**
-   * @template TValue
+   * @template TValue The value type. It will be the same type as `value` or `null`. It can be in `[start, end]` format in case of range value.
    * Method returning the reference value to use when mounting the component.
    * @param {object} params The params of the method.
    * @param {PickerValidDate | undefined} params.referenceDate The referenceDate provided by the user.
@@ -66,10 +67,10 @@ export interface PickerValueManager<TValue, TError> {
     granularity: number;
     timezone: PickersTimezone;
     getTodayDate?: () => PickerValidDate;
-  }) => TValue;
+  }) => InferNonNullablePickerValue<TValue>;
   /**
    * Method parsing the input value to replace all invalid dates by `null`.
-   * @template TValue
+   * @template TValue The value type. It will be the same type as `value` or `null`. It can be in `[start, end]` format in case of range value.
    * @param {MuiPickersAdapter} utils The adapter.
    * @param {TValue} value The value to parse.
    * @returns {TValue} The value without invalid date.
@@ -77,7 +78,7 @@ export interface PickerValueManager<TValue, TError> {
   cleanValue: (utils: MuiPickersAdapter, value: TValue) => TValue;
   /**
    * Generates the new value, given the previous value and the new proposed value.
-   * @template TValue
+   * @template TValue The value type. It will be the same type as `value` or `null`. It can be in `[start, end]` format in case of range value.
    * @param {MuiPickersAdapter} utils The adapter.
    * @param {TValue} lastValidDateValue The last valid value.
    * @param {TValue} value The proposed value.
@@ -106,7 +107,7 @@ export interface PickerValueManager<TValue, TError> {
   /**
    * Return the timezone of the date inside a value.
    * Throw an error on range picker if both values don't have the same timezone.
-   @template TValue
+   * @template TValue The value type. It will be the same type as `value` or `null`. It can be in `[start, end]` format in case of range value.
    @param {MuiPickersAdapter} utils The utils to manipulate the date.
    @param {TValue} value The current value.
    @returns {string | null} The timezone of the current value.
@@ -114,7 +115,7 @@ export interface PickerValueManager<TValue, TError> {
   getTimezone: (utils: MuiPickersAdapter, value: TValue) => string | null;
   /**
    * Change the timezone of the dates inside a value.
-   @template TValue
+   * @template TValue The value type. It will be the same type as `value` or `null`. It can be in `[start, end]` format in case of range value.
    @param {MuiPickersAdapter} utils The utils to manipulate the date.
    @param {PickersTimezone} timezone The current timezone.
    @param {TValue} value The value to convert.
@@ -125,19 +126,19 @@ export interface PickerValueManager<TValue, TError> {
 
 export type PickerSelectionState = 'partial' | 'shallow' | 'finish';
 
-export interface UsePickerValueState<TValue> {
+export interface UsePickerValueState<TValue extends PickerValidValue> {
   /**
    * Date displayed on the views and the field.
    * It is updated whenever the user modifies something.
    */
   draft: TValue;
   /**
-   * Last value published (e.g: the last value for which `shouldPublishValue` returned `true`).
+   * Last value published (the last value for which `shouldPublishValue` returned `true`).
    * If `onChange` is defined, it's the value that was passed on the last call to this callback.
    */
   lastPublishedValue: TValue;
   /**
-   * Last value committed (e.g: the last value for which `shouldCommitValue` returned `true`).
+   * Last value committed (the last value for which `shouldCommitValue` returned `true`).
    * If `onAccept` is defined, it's the value that was passed on the last call to this callback.
    */
   lastCommittedValue: TValue;
@@ -156,12 +157,12 @@ export interface UsePickerValueState<TValue> {
   hasBeenModifiedSinceMount: boolean;
 }
 
-export interface PickerValueUpdaterParams<TValue, TError> {
+export interface PickerValueUpdaterParams<TValue extends PickerValidValue, TError> {
   action: PickerValueUpdateAction<TValue, TError>;
   dateState: UsePickerValueState<TValue>;
   /**
    * Check if the new draft value has changed compared to some given value.
-   * @template TValue
+   * @template TValue The value type. It will be the same type as `value` or `null`. It can be in `[start, end]` format in case of range value.
    * @param {TValue} comparisonValue The value to compare the new draft value with.
    * @returns {boolean} `true` if the new draft value is equal to the comparison value.
    */
@@ -170,7 +171,7 @@ export interface PickerValueUpdaterParams<TValue, TError> {
   closeOnSelect: boolean;
 }
 
-export type PickerValueUpdateAction<TValue, TError> =
+export type PickerValueUpdateAction<TValue extends PickerValidValue, TError> =
   | {
       name: 'setValueFromView';
       value: TValue;
@@ -196,7 +197,8 @@ export type PickerValueUpdateAction<TValue, TError> =
 /**
  * Props used to handle the value that are common to all pickers.
  */
-export interface UsePickerValueBaseProps<TValue, TError> extends OnErrorProps<TValue, TError> {
+export interface UsePickerValueBaseProps<TValue extends PickerValidValue, TError>
+  extends OnErrorProps<TValue, TError> {
   /**
    * The selected value.
    * Used when the component is controlled.
@@ -254,7 +256,7 @@ export interface UsePickerValueNonStaticProps {
 /**
  * Props used to handle the value of the pickers.
  */
-export interface UsePickerValueProps<TValue, TError>
+export interface UsePickerValueProps<TValue extends PickerValidValue, TError>
   extends UsePickerValueBaseProps<TValue, TError>,
     UsePickerValueNonStaticProps,
     TimezoneProps {
@@ -263,7 +265,7 @@ export interface UsePickerValueProps<TValue, TError>
 }
 
 export interface UsePickerValueParams<
-  TValue,
+  TValue extends PickerValidValue,
   TExternalProps extends UsePickerValueProps<TValue, any>,
 > {
   props: TExternalProps;
@@ -273,34 +275,24 @@ export interface UsePickerValueParams<
   validator: Validator<TValue, InferError<TExternalProps>, TExternalProps>;
 }
 
-export interface UsePickerValueActions {
-  onAccept: () => void;
-  onClear: () => void;
-  onDismiss: () => void;
-  onCancel: () => void;
-  onSetToday: () => void;
-  onOpen: (event: React.UIEvent) => void;
-  onClose: (event?: React.UIEvent) => void;
-}
-
-export type UsePickerValueFieldResponse<TValue, TSection extends FieldSection, TError> = Required<
-  Pick<UseFieldInternalProps<TValue, TSection, any, TError>, 'value' | 'onChange'>
+export type UsePickerValueFieldResponse<TValue extends PickerValidValue, TError> = Required<
+  Pick<UseFieldInternalProps<TValue, any, TError>, 'value' | 'onChange'>
 >;
 
 /**
  * Props passed to `usePickerViews`.
  */
-export interface UsePickerValueViewsResponse<TValue> {
+export interface UsePickerValueViewsResponse<TValue extends PickerValidValue> {
   value: TValue;
   onChange: (value: TValue, selectionState?: PickerSelectionState) => void;
   open: boolean;
-  onClose: (event?: React.MouseEvent) => void;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 /**
  * Props passed to `usePickerLayoutProps`.
  */
-export interface UsePickerValueLayoutResponse<TValue> extends UsePickerValueActions {
+export interface UsePickerValueLayoutResponse<TValue extends PickerValidValue> {
   value: TValue;
   onChange: (newValue: TValue) => void;
   onSelectShortcut: (
@@ -311,10 +303,69 @@ export interface UsePickerValueLayoutResponse<TValue> extends UsePickerValueActi
   isValid: (value: TValue) => boolean;
 }
 
-export interface UsePickerValueResponse<TValue, TSection extends FieldSection, TError> {
-  open: boolean;
-  actions: UsePickerValueActions;
+/**
+ * Params passed to `usePickerProvider`.
+ */
+export interface UsePickerValueProviderParams<TValue extends PickerValidValue> {
+  value: TValue;
+  contextValue: UsePickerValueContextValue;
+  actionsContextValue: UsePickerValueActionsContextValue;
+  privateContextValue: UsePickerValuePrivateContextValue;
+}
+
+export interface UsePickerValueResponse<TValue extends PickerValidValue, TError> {
   viewProps: UsePickerValueViewsResponse<TValue>;
-  fieldProps: UsePickerValueFieldResponse<TValue, TSection, TError>;
+  fieldProps: UsePickerValueFieldResponse<TValue, TError>;
   layoutProps: UsePickerValueLayoutResponse<TValue>;
+  provider: UsePickerValueProviderParams<TValue>;
+}
+
+export interface UsePickerValueContextValue extends UsePickerValueActionsContextValue {
+  /**
+   * `true` if the picker is open, `false` otherwise.
+   */
+  open: boolean;
+}
+
+export interface UsePickerValueActionsContextValue {
+  /**
+   * Set the current open state of the Picker.
+   * ```ts
+   * setOpen(true); // Opens the picker.
+   * setOpen(false); // Closes the picker.
+   * setOpen((prevOpen) => !prevOpen); // Toggles the open state.
+   * ```
+   * @param {React.SetStateAction<boolean>} action The new open state of the Picker.
+   * It can be a function that will receive the current open state.
+   */
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  /**
+   * Set the current value of the picker to be empty.
+   * The value will be `null` on single pickers and `[null, null]` on range pickers.
+   */
+  clearValue: () => void;
+  /**
+   * Set the current value of the picker to be the current date.
+   * The value will be `today` on single pickers and `[today, today]` on range pickers.
+   * With `today` being the current date, with its time set to `00:00:00` on Date Pickers and its time set to the current time on Time and Date Pickers.
+   */
+  setValueToToday: () => void;
+  /**
+   * Accept the current value of the picker.
+   * Will call `onAccept` if defined.
+   * If the picker is re-opened, this value will be the one used to initialize the views.
+   */
+  acceptValueChanges: () => void;
+  /**
+   * Cancel the changes made to the current value of the picker.
+   * The value will be reset to the last accepted value.
+   */
+  cancelValueChanges: () => void;
+}
+
+export interface UsePickerValuePrivateContextValue {
+  /**
+   * Closes the picker and accepts the current value if it is not equal to the last accepted value.
+   */
+  dismissViews: () => void;
 }

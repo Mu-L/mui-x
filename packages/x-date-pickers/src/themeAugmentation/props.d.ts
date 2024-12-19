@@ -5,9 +5,9 @@ import {
 } from '../DateCalendar';
 import { DayCalendarSkeletonProps } from '../DayCalendarSkeleton';
 import { ClockNumberProps, TimeClockProps, ClockPointerProps, ClockProps } from '../TimeClock';
-import { ExportedPickersMonthProps, MonthCalendarProps } from '../MonthCalendar';
+import { MonthCalendarProps } from '../MonthCalendar';
 import { PickersDayProps } from '../PickersDay';
-import { ExportedPickersYearProps, YearCalendarProps } from '../YearCalendar';
+import { YearCalendarProps } from '../YearCalendar';
 import { DateFieldProps } from '../DateField';
 import { LocalizationProviderProps } from '../LocalizationProvider';
 import { PickersLayoutProps } from '../PickersLayout';
@@ -52,6 +52,7 @@ import {
   PickersFilledInputProps,
 } from '../PickersTextField';
 import { PickersSectionListProps } from '../PickersSectionList';
+import { PickerValidValue } from '../internals/models';
 
 export interface PickersComponentsPropsList {
   MuiClock: ClockProps;
@@ -74,14 +75,12 @@ export interface PickersComponentsPropsList {
   MuiPickersCalendarHeader: ExportedPickersCalendarHeaderProps;
   MuiPickersDay: PickersDayProps;
   MuiPickersFadeTransitionGroup: PickersFadeTransitionGroupProps;
-  MuiPickersMonth: ExportedPickersMonthProps;
   MuiPickersPopper: PickerPopperProps;
   MuiPickersSlideTransition: ExportedSlideTransitionProps;
-  MuiPickersToolbar: PickersToolbarProps<unknown, DateOrTimeView>;
+  MuiPickersToolbar: PickersToolbarProps<PickerValidValue, DateOrTimeView>;
   MuiPickersToolbarButton: PickersToolbarButtonProps;
   MuiPickersToolbarText: ExportedPickersToolbarTextProps;
-  MuiPickersLayout: PickersLayoutProps<unknown, DateOrTimeView>;
-  MuiPickersYear: ExportedPickersYearProps;
+  MuiPickersLayout: PickersLayoutProps<PickerValidValue, DateOrTimeView>;
   MuiTimeClock: TimeClockProps;
   MuiTimeField: TimeFieldProps<any>;
   MuiTimePickerToolbar: ExportedTimePickerToolbarProps;
